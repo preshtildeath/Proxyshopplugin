@@ -275,6 +275,7 @@ class GoldenAgeTemplate (temp.NormalFullartTemplate):
     def __init__ (self, layout):
         # DO STUFF
         super().__init__(layout)
+        self.art_reference = psd.getLayer("Full Art Frame")
     
     # OPTIONAL
     def enable_frame_layers (self):
