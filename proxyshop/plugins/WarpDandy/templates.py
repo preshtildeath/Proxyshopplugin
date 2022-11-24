@@ -180,87 +180,69 @@ class ClassicWhiteBorderTemplate (temp.NormalClassicTemplate):
  
 class NicknameSmallTemplate (temp.NormalTemplate):
     """
-     * Requires manually adding the nickname
+     * Automates nickname
+     * "Cardname (Artist) [SET] {Nickname}.gif/jpg" for art file
     """
     def template_file_name (self):
         return "WarpDandy/NicknameSmall"
 
     def template_suffix (self):
-        return "Nickname S"
+        return "Ikoria S"
 
-    # OPTIONAL
     def __init__ (self, layout):
-        # DO STUFF
+        # strip out reminder text for fullart
         super().__init__(layout)
-        # full art
-        self.art_reference = psd.getLayer(con.layers['ART_FRAME']) 
-        
-    # OPTIONAL
-    def enable_frame_layers(self):
 
-        # Easy reference
-        docref = app.activeDocument
+    def basic_text_layers(self, text_and_icons):
+        super().basic_text_layers(text_and_icons)
+
+        nickname_layer = psd.getLayer("Manual Nickname", text_and_icons)
+        n = self.layout.file
+        nickname_text = n[n.rfind("{")+1:n.rfind("}")]
+        if n == "": return None
+        self.tx_layers.append(
+            txt_layers.ScaledTextField(
+                layer=nickname_layer,
+                contents=nickname_text,
+                reference=psd.getLayer("Mana Cost", text_and_icons),
+            )
+        )
+
+    def enable_frame_layers (self):
 
         # twins and pt box
         psd.getLayer(self.layout.twins, con.layers['TWINS']).visible = True
-        if self.is_creature: psd.getLayer(self.layout.twins, con.layers['PT_BOX']).visible = True
+        if self.is_creature:
+            psd.getLayer(self.layout.twins, con.layers['PT_BOX']).visible = True
 
         # pinlines
         pinlines = psd.getLayerSet(con.layers['PINLINES_TEXTBOX'])
-        if self.is_land: pinlines = psd.getLayerSet(con.layers['LAND_PINLINES_TEXTBOX'])
+        if self.is_land:
+            pinlines = psd.getLayerSet(con.layers['LAND_PINLINES_TEXTBOX'])
         psd.getLayer(self.layout.pinlines, pinlines).visible = True
 
-        # background
-        background = psd.getLayerSet(con.layers['BACKGROUND'])
-        if self.layout.is_nyx: background = psd.getLayerSet(con.layers['NYX'])
-        psd.getLayer(self.layout.background, background).visible = True
+        if self.is_legendary:
+            # legendary crown
+            psd.getLayer(self.layout.pinlines, con.layers['LEGENDARY_CROWN']).visible = True
+            app.activeDocument.activeLayer = pinlines
+            psd.enable_active_layer_mask()
+        
+    def post_text_layers(self):
+        super().post_text_layers()
+        psd.content_fill_empty_area(self.art_layer)
 
-        # Content aware fill
-        docref.activeLayer = self.art_layer
-        psd.content_fill_empty_area()
-           
 
-
-class NicknameMediumTemplate (temp.NormalTemplate):
+class NicknameMediumTemplate (NicknameSmallTemplate):
     """
-     * Requires manually adding the nickname
+     * Automates nickname
+     * "Cardname (Artist) [SET] {Nickname}.gif/jpg" for art file
     """
     def template_file_name (self):
         return "WarpDandy/NicknameMedium"
 
     def template_suffix (self):
-        return "Nickname M"
-
-    # OPTIONAL
-    def __init__ (self, layout):
-        # DO STUFF
-        super().__init__(layout)
-        # full art
-        self.art_reference = psd.getLayer(con.layers['ART_FRAME']) 
-        
-    # OPTIONAL
-    def enable_frame_layers(self):
-
-        # Easy reference
-        docref = app.activeDocument
-
-        # twins and pt box
-        psd.getLayer(self.layout.twins, con.layers['TWINS']).visible = True
-        if self.is_creature: psd.getLayer(self.layout.twins, con.layers['PT_BOX']).visible = True
-
-        # pinlines
-        pinlines = psd.getLayerSet(con.layers['PINLINES_TEXTBOX'])
-        if self.is_land: pinlines = psd.getLayerSet(con.layers['LAND_PINLINES_TEXTBOX'])
-        psd.getLayer(self.layout.pinlines, pinlines).visible = True
-
-        # background
-        background = psd.getLayerSet(con.layers['BACKGROUND'])
-        if self.layout.is_nyx: background = psd.getLayerSet(con.layers['NYX'])
-        psd.getLayer(self.layout.background, background).visible = True
-
-        # Content aware fill
-        docref.activeLayer = self.art_layer
-        psd.content_fill_empty_area()
+        return "Ikoria M"
+    
             
 class GoldenAgeTemplate (temp.NormalFullartTemplate):
     """
