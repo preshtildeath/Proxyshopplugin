@@ -148,10 +148,6 @@ class NicknameSmallTemplate (temp.NormalTemplate):
     template_file_name = "WarpDandy/NicknameSmall"
     template_suffix = "Nickname S"
 
-    def __init__(self, layout):
-        cfg.exit_early = True
-        super().__init__(layout)
-
     @property
     def is_nyx(self) -> bool:
         return False
@@ -168,49 +164,56 @@ class NicknameSmallTemplate (temp.NormalTemplate):
     def art_reference_layer(self) -> Optional[ArtLayer]:
         return psd.getLayer(con.layers.ART_FRAME)
 
+    @cached_property
+    def text_layer_nickname(self) -> ArtLayer:
+        return psd.getLayer("Manual Nickname", self.text_layers)
+
     def load_artwork(self):
         super().load_artwork()
 
         # Content aware fill for extended art
         psd.content_fill_empty_area(self.art_layer)
+
+    def basic_text_layers(self) -> None:
+
+        if "{" in self.layout.filename:
+            start = self.layout.filename.find("{") + 1
+            end = self.layout.filename.find("}")
+            nickname = self.layout.filename[start:end]
+            self.text.append(
+                text_classes.ScaledTextField(
+                    layer=self.text_layer_nickname,
+                    contents=nickname,
+                    reference = self.text_layer_mana,
+                )
+            )
+        else:
+            cfg.exit_early = True
+
+        self.text.extend([
+            text_classes.FormattedTextField(
+                layer = self.text_layer_mana,
+                contents = self.layout.mana_cost,
+            ),
+            text_classes.TextField(
+                layer = self.text_layer_name,
+                contents = self.layout.name,
+            ),
+            text_classes.ScaledTextField(
+                layer = self.text_layer_type,
+                contents = self.layout.type_line,
+                reference = self.expansion_symbol,
+            )
+        ])
+
            
 
-class NicknameMediumTemplate (temp.NormalTemplate):
+class NicknameMediumTemplate (NicknameSmallTemplate):
     """
      * Requires manually adding the nickname
     """
     template_file_name = "WarpDandy/NicknameMedium"
     template_suffix = "Nickname M"
-
-    def __init__(self, layout):
-        cfg.exit_early = True
-        super().__init__(layout)
-
-    @property
-    def is_nyx(self) -> bool:
-        return False
-    
-    @property
-    def is_companion(self) -> bool:
-        return False
-    
-    @property
-    def background_layer(self) -> Optional[ArtLayer]:
-        return
-
-    @property
-    def twins_layer(self) -> Optional[ArtLayer]:
-        return
-
-    @cached_property
-    def art_reference_layer(self) -> Optional[ArtLayer]:
-        return psd.getLayer(con.layers.ART_FRAME)
-
-    def load_artwork(self):
-        super().load_artwork()
-
-        # Content aware fill for extended art
-        psd.content_fill_empty_area(self.art_layer)
 
 
 class GoldenAgeTemplate (temp.NormalTemplate):
